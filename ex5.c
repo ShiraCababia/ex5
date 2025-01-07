@@ -8,15 +8,16 @@ Assignment: ex5
 #include <stdlib.h>
 #include <string.h>
 
-#define FIRST_OPTION 1
-#define SECOND_OPTION 2
-#define THIRD_OPTION 3
+#define WATCH_PLAYLISTS 1
+#define ADD_PLAYLIST 2
+#define REMOVE_PLAYLIST 3
 #define EXIT_OPTION 4
-// #define INITIALֹֹ_NUMֹ_OF_CELLS_FOR_PLST_ARR 1
-
-int main();
-void printMenu();
-char *getString();
+#define SHOW_PLAYLIST 1
+#define ADD_SONG 2
+#define DELETE_SONG 3
+#define SORT_PLAYLIST 4
+#define PLAY_PLAYLIST 5
+#define EXIT_PLAYLIST_OPTION 6
 
 typedef struct Song
 {
@@ -34,7 +35,11 @@ typedef struct Playlist
     int songsNum;
 } Playlist;
 
-// some recommendations for functions, you may implement however you want
+int main();
+void printMenu();
+char *getString();
+void printPlaylistMenu();
+int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx);
 
 int main()
 {
@@ -47,24 +52,50 @@ int main()
     {
         switch (choice)
         {
-        case FIRST_OPTION:
+
+        case WATCH_PLAYLISTS: // 1
         {
+            int chosenPlylst;
             printf("Choose a playlist:\n");
+            /* Going through (playlistsArrLength + 1) lines to display playlistsArrLength num of playlists plus the
+            'Back to main menu' line at the end.*/
             for (int i = 0; i <= playlistsArrLength; i++)
             {
-                if (i == playlistsArrLength)
+                // If there is a playlist to display
+                if (i < playlistsArrLength)
                 {
-                    printf("%d. Back to main menu\n", (i+1));
-                }
-                else if (i < playlistsArrLength)
-                {
+                    /* Print the num of option and the playlist name.
+                    (The num of option will be (i+1) since the i started from value of 0) */
                     printf("%d. %s\n", (i + 1), playlistsArr[i]->name);
                 }
+                /* If all is needed is to display the 'Back to main menu' line */
+                else if (i == playlistsArrLength)
+                {
+                    printf("%d. Back to main menu\n", (i + 1));
+                }
             }
-            break;
+            scanf("%d", &chosenPlylst);
+            // If the user chose to go back to main menu
+            if (chosenPlylst == (playlistsArrLength + 1))
+            {
+                break;
+            }
+            // If user's input isn't valid
+            else if (chosenPlylst < 1 || chosenPlylst > (playlistsArrLength + 1))
+            {
+                printf("Invalid option\n");
+            }
+            // If the chosen option is a valid playlist
+            else
+            {
+                int playlistIndx = chosenPlylst - 1;
+                optionsForPlaylist(playlistsArr, playlistIndx); //////// Func
+                printf(" - - - Finished options for a playlist. \n");
+                break;
+            }
         }
 
-        case SECOND_OPTION:
+        case ADD_PLAYLIST: // 2 - NOTES
         {
             Playlist *newPlaylist = malloc(sizeof(Playlist));
             if (!newPlaylist)
@@ -90,12 +121,12 @@ int main()
             break;
         }
 
-        case THIRD_OPTION:
+        case REMOVE_PLAYLIST: // 3
         {
             break;
         }
 
-        case EXIT_OPTION:
+        case EXIT_OPTION: // 4
         {
             break;
         }
@@ -112,6 +143,7 @@ int main()
     return 0;
 }
 
+// The function prints the options in the main menu.
 void printMenu()
 {
     printf("Please Choose:\n"
@@ -166,32 +198,96 @@ char *getString()
     return string;
 }
 
+// The function prints the options for a given playlist.
+void printPlaylistMenu()
+{
+    printf("1. Show Playlist\n"
+           "2. Add Song\n"
+           "3. Delete Song\n"
+           "4. Sort\n"
+           "5. Play\n"
+           "6. exit\n");
+}
+
+int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
+{
+    int optionForPlylst;
+    printf("playlist %s:\n", playlistsArr[playlistIndx]->name);
+    printPlaylistMenu();
+    scanf("%d", &optionForPlylst);
+    while (optionForPlylst != EXIT_PLAYLIST_OPTION)
+    {
+        switch (optionForPlylst)
+        {
+        case SHOW_PLAYLIST: // 1
+        {
+            int songToPlay;
+            printf("choose a song to play, or 0 to quit:\n");
+            scanf("%d", &songToPlay);
+            if (playlistsArr[playlistIndx]->songsNum == 0)
+            {
+                break;
+            }
+            else if (playlistsArr[playlistIndx]->songsNum > 0)
+            {
+                // Will be completed next ...
+            }
+            break;
+        }
+
+        case ADD_SONG: // 2
+        {
+            // int songToPlay;
+            // printf("Enter song's details\n");
+            // printf("Title:\n");
+            // scanf("%d", &songToPlay);
+            break;
+        }
+
+        case DELETE_SONG: // 3
+        {
+            break;
+        }
+
+        case SORT_PLAYLIST: // 4
+        {
+            break;
+        }
+
+        case PLAY_PLAYLIST: // 5
+        {
+            break;
+        }
+
+        case EXIT_PLAYLIST_OPTION: // 6
+        {
+            break;
+        }
+
+        default:
+        {
+            printf("Invalid option\n");
+        }
+        }
+        printPlaylistMenu();
+        scanf("%d", &optionForPlylst);
+    }
+    printf("Goodbye!\n");
+    return 0;
+}
+
 // void deleteSong()
 // {
-
 //     printf("Song deleted successfully.\n");
 // }
 
-// void playSong()
-// {
-// }
+// void playSong() {}
 
-// void freeSong()
-// {
-// }
+// void freeSong() {}
 
-// void freePlaylist(P)
-// {
-// }
-
-// void printPlaylistsMenu()
-// {
-//     printf("Please Choose:\n");
-//     printf("\t1. Watch playlists\n\t2. Add playlist\n\t3. Remove playlist\n\t4. exit\n");
-// }
+// void freePlaylist(P) {}
 
 // void sortPlaylist()
 // {
-
 //     printf("sorted\n");
 // }
