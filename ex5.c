@@ -40,6 +40,8 @@ void printMenu();
 char *getString();
 void printPlaylistMenu();
 int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx);
+void printSongsList(Playlist **playlistsArr, int playlistIndx);
+void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
 
 int main()
 {
@@ -93,6 +95,7 @@ int main()
                 printf(" - - - Finished options for a playlist. \n");
                 break;
             }
+            break;
         }
 
         case ADD_PLAYLIST: // 2 - NOTES
@@ -222,25 +225,70 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
         case SHOW_PLAYLIST: // 1
         {
             int songToPlay;
+            if (playlistsArr[playlistIndx]->songsNum > 0)
+            {
+                printSongsList(playlistsArr, playlistIndx);
+            }
             printf("choose a song to play, or 0 to quit:\n");
             scanf("%d", &songToPlay);
-            if (playlistsArr[playlistIndx]->songsNum == 0)
+            if (playlistsArr[playlistIndx]->songsNum == 0 || songToPlay == 0)
             {
                 break;
             }
-            else if (playlistsArr[playlistIndx]->songsNum > 0)
+            else if (songToPlay > playlistsArr[playlistIndx]->songsNum || songToPlay < 0)
             {
-                // Will be completed next ...
+                printf("Invalid option\n");
+                break;
+            }
+            else
+            {
+                playSong(playlistsArr, playlistIndx, (songToPlay - 1));
             }
             break;
         }
 
         case ADD_SONG: // 2
         {
-            // int songToPlay;
-            // printf("Enter song's details\n");
-            // printf("Title:\n");
-            // scanf("%d", &songToPlay);
+            Song *newSong = malloc(sizeof(Song));
+            if (!newSong)
+            {
+                free(newSong);
+                printf("There isn't enough place in memory!");
+                exit(1);
+            }
+            printf("Enter song's details\n");
+            scanf("%*[^\n]");
+            printf("Title:\n");
+            newSong->title = getString();
+            printf("Artist:\n");
+            newSong->artist = getString();
+            printf("Year of release:\n");
+            scanf("%d", &newSong->year);
+            printf("Lyrics:\n");
+            newSong->lyrics = getString();
+            newSong->streams = 0;
+
+            // Check by print if all inserted data for NEW-SONG is properly inserted .
+            /* printf("NEW SONG VALUES FROM INSIDE THE NEW-SONG: title: %s , artist: %s , year: %d , lyrics: %s\n",
+                   newSong->title, newSong->artist, newSong->year, newSong->lyrics); */
+
+            // Saving place in memory and insert the NEW-SONG to the PLAYLIST .
+            playlistsArr[playlistIndx]->songs = realloc(playlistsArr[playlistIndx]->songs,
+                                                        (playlistsArr[playlistIndx]->songsNum + 1) * sizeof(Song));
+            if (!playlistsArr[playlistIndx]->songs)
+            {
+                free(playlistsArr[playlistIndx]->songs);
+                printf("There isn't enough place in memory!");
+                exit(1);
+            }
+            playlistsArr[playlistIndx]->songs[playlistsArr[playlistIndx]->songsNum] = newSong;
+
+            // Check by print if all inserted data for PLAYLIST-ARR is properly inserted .
+            /* Song *xxx = playlistsArr[playlistIndx]->songs[playlistsArr[playlistIndx]->songsNum];
+            printf("NEW SONG VALUES FROM INSIDE THE PLAYLIST: title: %s , artist: %s , year: %d , lyrics: %s\n",
+                   xxx->title, xxx->artist, xxx->year, xxx->lyrics); */
+
+            playlistsArr[playlistIndx]->songsNum++;
             break;
         }
 
@@ -276,12 +324,33 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
     return 0;
 }
 
+void printSongsList(Playlist **playlistsArr, int playlistIndx)
+{
+    for (int i = 0; i < playlistsArr[playlistIndx]->songsNum; i++)
+    {
+        printf("%d. Title: %s\n"
+               "Artist: %s\n"
+               "Released: %d\n"
+               "Streams: %d\n\n",
+               (i + 1), playlistsArr[playlistIndx]->songs[i]->title,
+               playlistsArr[playlistIndx]->songs[i]->artist, playlistsArr[playlistIndx]->songs[i]->year,
+               playlistsArr[playlistIndx]->songs[i]->streams);
+    }
+}
+
+void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
+{
+    playlistsArr[playlistIndx]->songs[songIndx]->streams++;
+    printf("Now playing %s:\n"
+           "$ %s $\n",
+           playlistsArr[playlistIndx]->songs[songIndx]->title,
+           playlistsArr[playlistIndx]->songs[songIndx]->lyrics);
+}
+
 // void deleteSong()
 // {
 //     printf("Song deleted successfully.\n");
 // }
-
-// void playSong() {}
 
 // void freeSong() {}
 
