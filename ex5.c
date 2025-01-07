@@ -91,7 +91,8 @@ int main()
             else
             {
                 int playlistIndx = chosenPlylst - 1;
-                optionsForPlaylist(playlistsArr, playlistIndx); //////// Func
+                // Print and implement the options for the playlist
+                optionsForPlaylist(playlistsArr, playlistIndx);
                 printf(" - - - Finished options for a playlist. \n");
                 break;
             }
@@ -201,7 +202,7 @@ char *getString()
     return string;
 }
 
-// The function prints the options for a given playlist.
+// The function prints the options for playlist.
 void printPlaylistMenu()
 {
     printf("1. Show Playlist\n"
@@ -225,21 +226,25 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
         case SHOW_PLAYLIST: // 1
         {
             int songToPlay;
+            // If there are songs in playlist print them (implement in a function)
             if (playlistsArr[playlistIndx]->songsNum > 0)
             {
                 printSongsList(playlistsArr, playlistIndx);
             }
             printf("choose a song to play, or 0 to quit:\n");
             scanf("%d", &songToPlay);
+            // If there are'nt songs in the playlist or the user chose to quit - get out from this section
             if (playlistsArr[playlistIndx]->songsNum == 0 || songToPlay == 0)
             {
                 break;
             }
+            // If the user chose an invalid input, show a message and get out
             else if (songToPlay > playlistsArr[playlistIndx]->songsNum || songToPlay < 0)
             {
                 printf("Invalid option\n");
                 break;
             }
+            // If the user's input is valid, display the options for the playlist and implement them (in a function)
             else
             {
                 playSong(playlistsArr, playlistIndx, (songToPlay - 1));
@@ -249,6 +254,7 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
 
         case ADD_SONG: // 2
         {
+            // Dynamically allocate place for a new song and insert it to the playlist.
             Song *newSong = malloc(sizeof(Song));
             if (!newSong)
             {
@@ -256,6 +262,7 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
                 printf("There isn't enough place in memory!");
                 exit(1);
             }
+            // Getting from the user all the needed details for a new song
             printf("Enter song's details\n");
             scanf("%*[^\n]");
             printf("Title:\n");
@@ -272,7 +279,6 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
             /* printf("NEW SONG VALUES FROM INSIDE THE NEW-SONG: title: %s , artist: %s , year: %d , lyrics: %s\n",
                    newSong->title, newSong->artist, newSong->year, newSong->lyrics); */
 
-            // Saving place in memory and insert the NEW-SONG to the PLAYLIST .
             playlistsArr[playlistIndx]->songs = realloc(playlistsArr[playlistIndx]->songs,
                                                         (playlistsArr[playlistIndx]->songsNum + 1) * sizeof(Song));
             if (!playlistsArr[playlistIndx]->songs)
@@ -304,6 +310,11 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
 
         case PLAY_PLAYLIST: // 5
         {
+            // Play all the songs in the playlist using the function that prints the name and lyrics for every song.
+            for (int i = 0; i < playlistsArr[playlistIndx]->songsNum; i++)
+            {
+                playSong(playlistsArr, playlistIndx, i);
+            }
             break;
         }
 
@@ -324,6 +335,7 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
     return 0;
 }
 
+// The function prints all the songs in a given playlist
 void printSongsList(Playlist **playlistsArr, int playlistIndx)
 {
     for (int i = 0; i < playlistsArr[playlistIndx]->songsNum; i++)
@@ -338,11 +350,12 @@ void printSongsList(Playlist **playlistsArr, int playlistIndx)
     }
 }
 
+// The function prints the name and lyrics for a given song and playlist indexes (= play the song)
 void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
 {
     playlistsArr[playlistIndx]->songs[songIndx]->streams++;
     printf("Now playing %s:\n"
-           "$ %s $\n",
+           "$ %s $\n\n",
            playlistsArr[playlistIndx]->songs[songIndx]->title,
            playlistsArr[playlistIndx]->songs[songIndx]->lyrics);
 }
