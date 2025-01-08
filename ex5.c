@@ -42,12 +42,15 @@ int main();
 void printMenu();
 char *getString();
 void printPlaylistMenu();
+void printAllPlaylists(Playlist **playlistsArr, int playlistsArrLength);
 int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx);
 void printSongsList(Playlist **playlistsArr, int playlistIndx);
 void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
 void sortPlaylist(Playlist **playlistsArr, int playlistIndx, int sortOption);
 void deleteSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
 void freeSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
+void removePlaylist(Playlist **playlistsArr, int playlistIndx, int playlistsArrLength);
+void freePlaylist(Playlist **playlistsArr, int playlistIndx);
 
 int main()
 {
@@ -67,24 +70,7 @@ int main()
             // As long as the user didn't choose the option of "Back to main menu"
             while (chosenPlylst != (playlistsArrLength + 1))
             {
-                printf("Choose a playlist:\n");
-                /* Going through (playlistsArrLength + 1) lines to display playlistsArrLength num of playlists plus the
-                'Back to main menu' line at the end.*/
-                for (int i = 0; i <= playlistsArrLength; i++)
-                {
-                    // If there is a playlist to display
-                    if (i < playlistsArrLength)
-                    {
-                        /* Print the num of option and the playlist name.
-                        (The num of option will be (i+1) since the i started from value of 0) */
-                        printf("%d. %s\n", (i + 1), playlistsArr[i]->name);
-                    }
-                    /* If all is needed is to display the 'Back to main menu' line */
-                    else if (i == playlistsArrLength)
-                    {
-                        printf("%d. Back to main menu\n", (i + 1));
-                    }
-                }
+                printAllPlaylists(playlistsArr, playlistsArrLength);
                 scanf("%d", &chosenPlylst);
                 // If the user chose to go back to main menu
                 if (chosenPlylst == (playlistsArrLength + 1))
@@ -114,7 +100,7 @@ int main()
             if (!newPlaylist)
             {
                 free(newPlaylist);
-                printf("There isn't enough place in memory!");
+                printf("Dynamic Memory Allocation Failed!\n!");
                 exit(1);
             }
             // Getting from the user and setting default values to all the needed details for a new playlist.
@@ -127,7 +113,7 @@ int main()
             if (!playlistsArr)
             {
                 free(playlistsArr);
-                printf("There isn't enough place in memory!");
+                printf("Dynamic Memory Allocation Failed!\n!");
                 exit(1);
             }
             playlistsArr[playlistsArrLength] = newPlaylist;
@@ -137,7 +123,26 @@ int main()
 
         case REMOVE_PLAYLIST: // 3
         {
-
+            // Remove the playlist from the playlists array, using a function
+            int playlistToRemove;
+            printAllPlaylists(playlistsArr, playlistsArrLength);
+            scanf("%d", &playlistToRemove);
+            // If the user chose to go back to main menu
+            if (playlistToRemove == (playlistsArrLength + 1))
+            {
+                break;
+            }
+            // If user's input isn't valid
+            else if (playlistToRemove < 1 || playlistToRemove > (playlistsArrLength + 1))
+            {
+                printf("Invalid option\n");
+            }
+            // If the chosen option is a valid playlist
+            else
+            {
+                int playlistIndxToRemove = playlistToRemove - 1;
+                removePlaylist(playlistsArr, playlistIndxToRemove, playlistsArrLength);
+            }
             break;
         }
 
@@ -186,7 +191,7 @@ char *getString()
         if (!string)
         {
             free(string);
-            printf("There isn't enough place in memory!");
+            printf("Dynamic Memory Allocation Failed!\n!");
             exit(1);
         }
         // Store the new char in the allocated memory and increment length for the next char.
@@ -200,7 +205,7 @@ char *getString()
         if (!string)
         {
             free(string);
-            printf("There isn't enough place in memory!");
+            printf("Dynamic Memory Allocation Failed!\n!");
             exit(1);
         }
         string[strLength] = '\0';
@@ -222,6 +227,28 @@ void printPlaylistMenu()
            "4. Sort\n"
            "5. Play\n"
            "6. exit\n");
+}
+
+/* The function goes through (playlistsArrLength + 1) lines to display the names of 'playlistsArrLength' num
+of playlists plus the 'Back to main menu' line at the end. */
+void printAllPlaylists(Playlist **playlistsArr, int playlistsArrLength)
+{
+    printf("Choose a playlist:\n");
+    for (int i = 0; i <= playlistsArrLength; i++)
+    {
+        // If there is a playlist to display
+        if (i < playlistsArrLength)
+        {
+            /* Print the num of option and the playlist name.
+            (The num of option will be (i+1) since the i started from value of 0) */
+            printf("%d. %s\n", (i + 1), playlistsArr[i]->name);
+        }
+        /* If all is needed is to display the 'Back to main menu' line */
+        else if (i == playlistsArrLength)
+        {
+            printf("%d. Back to main menu\n", (i + 1));
+        }
+    }
 }
 
 // The function implements all the different options for a given playlist.
@@ -272,7 +299,7 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
             if (!newSong)
             {
                 free(newSong);
-                printf("There isn't enough place in memory!");
+                printf("Dynamic Memory Allocation Failed!\n!");
                 exit(1);
             }
             // Getting from the user and setting default values to all the needed details for a new song.
@@ -292,7 +319,7 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
             if (!playlistsArr[playlistIndx]->songs)
             {
                 free(playlistsArr[playlistIndx]->songs);
-                printf("There isn't enough place in memory!");
+                printf("Dynamic Memory Allocation Failed!\n!");
                 exit(1);
             }
             playlistsArr[playlistIndx]->songs[playlistsArr[playlistIndx]->songsNum] = newSong;
@@ -377,7 +404,7 @@ void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
            playlistsArr[playlistIndx]->songs[songIndx]->lyrics);
 }
 
-// The function sort the given playlist by the option the user chose
+// The function sorts the given playlist by the option the user chose
 void sortPlaylist(Playlist **playlistsArr, int playlistIndx, int sortOption)
 {
     switch (sortOption)
@@ -462,7 +489,7 @@ void sortPlaylist(Playlist **playlistsArr, int playlistIndx, int sortOption)
     printf("sorted\n");
 }
 
-// The function delete the given song from the playlist and free the relevant values.
+// The function deletes the given song from the playlist and free the relevant values.
 void deleteSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
 {
     freeSong(playlistsArr, playlistIndx, songIndx);
@@ -476,14 +503,14 @@ void deleteSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
     if (!playlistsArr[playlistIndx]->songs)
     {
         free(playlistsArr[playlistIndx]->songs);
-        printf("There isn't enough place in memory!");
+        printf("Dynamic Memory Allocation Failed!\n!");
         exit(1);
     }
     playlistsArr[playlistIndx]->songsNum--;
     printf("Song deleted successfully.\n");
 }
 
-// The function free the memory that's taken by the given song
+// The function frees the memory that's taken by the given song
 void freeSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
 {
     free(playlistsArr[playlistIndx]->songs[songIndx]->title);
@@ -492,4 +519,28 @@ void freeSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
     free(playlistsArr[playlistIndx]->songs[songIndx]);
 }
 
-// void freePlaylist(P) {}
+// The function removes the given playlist from the playlist and free the relevant values
+void removePlaylist(Playlist ***playlistsArr, int playlistIndx, int playlistsArrLength)
+{
+    for (int i = 0; i < (*playlistsArr)[playlistIndx]->songsNum; i++;)
+    {
+        freeSong((*playlistsArr), playlistIndx, i);
+    }
+    free((*playlistsArr)[playlistIndx]->songs);
+    free((*playlistsArr)[playlistIndx]->name);
+    free((*playlistsArr)[playlistIndx]);
+    // Move all the playlists from the removed playlist - 1 place backwards to keep the continuaity of playlists in the arr.
+    for (int i = playlistIndx; i < playlistsArrLength - 1; i++)
+    {
+        (*playlistsArr)[i] = (*playlistsArr)[i + 1];
+    }
+    (*playlistsArr) = realloc((*playlistsArr), (playlistsArrLength - 1) * sizeof(Playlist *));
+    if (!(*playlistsArr))
+    {
+        free((*playlistsArr));
+        printf("Dynamic Memory Allocation Failed!\n!");
+        exit(1);
+    }
+    playlistsArrLength--;
+    printf("Playlist deleted.\n");
+}
