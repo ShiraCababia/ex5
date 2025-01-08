@@ -18,6 +18,9 @@ Assignment: ex5
 #define SORT_PLAYLIST 4
 #define PLAY_PLAYLIST 5
 #define EXIT_PLAYLIST_OPTION 6
+#define SORT_BY_YEAR 1
+#define SORT_BY_STREAMS_ASCENDING 2
+#define SORT_BY_STREAMS_DESCENDING 3
 
 typedef struct Song
 {
@@ -42,6 +45,7 @@ void printPlaylistMenu();
 int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx);
 void printSongsList(Playlist **playlistsArr, int playlistIndx);
 void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
+void sortPlaylist(Playlist **playlistsArr, int playlistIndx, int sortOption);
 
 int main()
 {
@@ -93,7 +97,6 @@ int main()
                 int playlistIndx = chosenPlylst - 1;
                 // Print and implement the options for the playlist
                 optionsForPlaylist(playlistsArr, playlistIndx);
-                printf(" - - - Finished options for a playlist. \n");
                 break;
             }
             break;
@@ -213,6 +216,7 @@ void printPlaylistMenu()
            "6. exit\n");
 }
 
+//
 int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
 {
     int optionForPlylst;
@@ -226,28 +230,29 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
         case SHOW_PLAYLIST: // 1
         {
             int songToPlay;
-            // If there are songs in playlist print them (implement in a function)
-            if (playlistsArr[playlistIndx]->songsNum > 0)
-            {
-                printSongsList(playlistsArr, playlistIndx);
-            }
+            // Print the songs in the playlist if exist (implement in a function)
+            printSongsList(playlistsArr, playlistIndx);
             printf("choose a song to play, or 0 to quit:\n");
             scanf("%d", &songToPlay);
-            // If there are'nt songs in the playlist or the user chose to quit - get out from this section
-            if (playlistsArr[playlistIndx]->songsNum == 0 || songToPlay == 0)
+            // If there are'nt any songs in playlist, go back to the menu
+            if (playlistsArr[playlistIndx]->songsNum == 0)
             {
                 break;
             }
-            // If the user chose an invalid input, show a message and get out
-            else if (songToPlay > playlistsArr[playlistIndx]->songsNum || songToPlay < 0)
+            // As long as user doesn't choose to get out
+            while (songToPlay != 0)
             {
-                printf("Invalid option\n");
-                break;
-            }
-            // If the user's input is valid, display the options for the playlist and implement them (in a function)
-            else
-            {
-                playSong(playlistsArr, playlistIndx, (songToPlay - 1));
+                // If the user chose a valid song, play it (print implement in a function)
+                if (songToPlay <= playlistsArr[playlistIndx]->songsNum && songToPlay > 0)
+                {
+                    playSong(playlistsArr, playlistIndx, (songToPlay - 1));
+                }
+                else
+                {
+                    printf("Invalid option\n");
+                }
+                printf("choose a song to play, or 0 to quit:\n");
+                scanf("%d", &songToPlay);
             }
             break;
         }
@@ -305,6 +310,14 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
 
         case SORT_PLAYLIST: // 4
         {
+            int sortOption;
+            printf("choose:\n"
+                   "1. sort by year\n"
+                   "2. sort by streams - ascending order\n"
+                   "3. sort by streams - descending order\n"
+                   "4. sort alphabetically\n");
+            scanf("%d", &sortOption);
+            sortPlaylist(playlistsArr, playlistIndx, sortOption);
             break;
         }
 
@@ -314,6 +327,7 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
             for (int i = 0; i < playlistsArr[playlistIndx]->songsNum; i++)
             {
                 playSong(playlistsArr, playlistIndx, i);
+                printf("\n");
             }
             break;
         }
@@ -355,9 +369,94 @@ void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
 {
     playlistsArr[playlistIndx]->songs[songIndx]->streams++;
     printf("Now playing %s:\n"
-           "$ %s $\n\n",
+           "$ %s $\n",
            playlistsArr[playlistIndx]->songs[songIndx]->title,
            playlistsArr[playlistIndx]->songs[songIndx]->lyrics);
+}
+
+// The function sort the given playlist by the option the user chose
+void sortPlaylist(Playlist **playlistsArr, int playlistIndx, int sortOption)
+{
+    switch (sortOption)
+    {
+    case SORT_BY_YEAR:
+    {
+        for (int i = 0; i < (playlistsArr[playlistIndx]->songsNum - 1); i++)
+        {
+            for (int j = 0; j < (playlistsArr[playlistIndx]->songsNum - i - 1); j++)
+            {
+                // If the year of the next song (j+1) is earlier than the current song's year (j)
+                if (playlistsArr[playlistIndx]->songs[j + 1]->year < playlistsArr[playlistIndx]->songs[j]->year)
+                {
+                    // Switch values so the current song will hold the song with the earlier year.
+                    Song *tempSong = playlistsArr[playlistIndx]->songs[j];
+                    playlistsArr[playlistIndx]->songs[j] = playlistsArr[playlistIndx]->songs[j + 1];
+                    playlistsArr[playlistIndx]->songs[j + 1] = tempSong;
+                }
+            }
+        }
+        break;
+    }
+
+    case SORT_BY_STREAMS_ASCENDING:
+    {
+        for (int i = 0; i < (playlistsArr[playlistIndx]->songsNum - 1); i++)
+        {
+            for (int j = 0; j < (playlistsArr[playlistIndx]->songsNum - i - 1); j++)
+            {
+                // If the streams amount of the next song (j+1) is smaller than the current's streams amount (j)
+                if (playlistsArr[playlistIndx]->songs[j + 1]->streams < playlistsArr[playlistIndx]->songs[j]->streams)
+                {
+                    // Switch values so the current song will hold the song with the least amount of streams.
+                    Song *tempSong = playlistsArr[playlistIndx]->songs[j];
+                    playlistsArr[playlistIndx]->songs[j] = playlistsArr[playlistIndx]->songs[j + 1];
+                    playlistsArr[playlistIndx]->songs[j + 1] = tempSong;
+                }
+            }
+        }
+        break;
+    }
+
+    case SORT_BY_STREAMS_DESCENDING:
+    {
+        for (int i = 0; i < (playlistsArr[playlistIndx]->songsNum - 1); i++)
+        {
+            for (int j = 0; j < (playlistsArr[playlistIndx]->songsNum - i - 1); j++)
+            {
+                // If the streams amount of the next song (j+1) is bigger than the current's streams amount (j)
+                if (playlistsArr[playlistIndx]->songs[j + 1]->streams > playlistsArr[playlistIndx]->songs[j]->streams)
+                {
+                    // Switch values so the current song will hold the song with the most amount of streams.
+                    Song *tempSong = playlistsArr[playlistIndx]->songs[j];
+                    playlistsArr[playlistIndx]->songs[j] = playlistsArr[playlistIndx]->songs[j + 1];
+                    playlistsArr[playlistIndx]->songs[j + 1] = tempSong;
+                }
+            }
+        }
+        break;
+    }
+
+    default:
+    {
+        for (int i = 0; i < (playlistsArr[playlistIndx]->songsNum - 1); i++)
+        {
+            for (int j = 0; j < (playlistsArr[playlistIndx]->songsNum - i - 1); j++)
+            {
+                // If the title of the next song (j+1) is alphabetically before the title of the current song (j)
+                if (strcmp(playlistsArr[playlistIndx]->songs[j + 1]->title,
+                           playlistsArr[playlistIndx]->songs[j]->title) < 0)
+                {
+                    // Switch values so the current song will hold the song with the alphabetically ealier title.
+                    Song *tempSong = playlistsArr[playlistIndx]->songs[j];
+                    playlistsArr[playlistIndx]->songs[j] = playlistsArr[playlistIndx]->songs[j + 1];
+                    playlistsArr[playlistIndx]->songs[j + 1] = tempSong;
+                }
+            }
+        }
+        break;
+    }
+    }
+    printf("sorted\n");
 }
 
 // void deleteSong()
@@ -368,8 +467,3 @@ void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
 // void freeSong() {}
 
 // void freePlaylist(P) {}
-
-// void sortPlaylist()
-// {
-//     printf("sorted\n");
-// }
