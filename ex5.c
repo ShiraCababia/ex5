@@ -49,7 +49,7 @@ void playSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
 void sortPlaylist(Playlist **playlistsArr, int playlistIndx, int sortOption);
 void deleteSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
 void freeSong(Playlist **playlistsArr, int playlistIndx, int songIndx);
-void removePlaylist(Playlist **playlistsArr, int playlistIndx, int playlistsArrLength);
+void removePlaylist(Playlist ***playlistsArr, int playlistIndx, int *playlistsArrLength);
 void freePlaylist(Playlist **playlistsArr, int playlistIndx);
 
 int main()
@@ -141,7 +141,7 @@ int main()
             else
             {
                 int playlistIndxToRemove = playlistToRemove - 1;
-                removePlaylist(playlistsArr, playlistIndxToRemove, playlistsArrLength);
+                removePlaylist(&playlistsArr, playlistIndxToRemove, &playlistsArrLength);
             }
             break;
         }
@@ -177,41 +177,33 @@ void printMenu()
 place for it in memory. */
 char *getString()
 {
-    char *string = NULL;
-    char c;
+    char *string = malloc(sizeof(char));
     int strLength = 0;
-    // Clear the buffer
-    scanf("%*c");
-    // Read every char from the input until getting an enter.
-    while ((c = getchar()) != '\n' && c != EOF)
+    char c;
+    if (string == NULL)
     {
-        // Resize the memory block to fit the new (and longer) string.
-        string = realloc(string, (strLength + 1));
-        // If memory allocation failed
-        if (!string)
-        {
-            free(string);
-            printf("Dynamic Memory Allocation Failed!\n!");
-            exit(1);
-        }
-        // Store the new char in the allocated memory and increment length for the next char.
+        printf("Dynamic Memory Allocation Failed!\n!");
+        exit(1);
+    }
+    // Read every char from the input until getting an enter.
+    scanf(" %c", &c);
+    while (c != '\n')
+    {
         string[strLength] = c;
         strLength++;
-    }
-    // Add a null-terminator at the end of the string.
-    if (string)
-    {
-        string = realloc(string, (strLength + 1));
-        if (!string)
+        // Resize the memory block to fit the new (and longer) string.
+        string = realloc(string, (strLength + 1) * sizeof(char));
+        // If memory allocation failed
+        if (string == NULL)
         {
-            free(string);
             printf("Dynamic Memory Allocation Failed!\n!");
             exit(1);
         }
-        string[strLength] = '\0';
+        scanf("%c", &c);
     }
+    string[strLength] = '\0';
     // Replace '\r' with '\0' for Windows line endings.
-    if (string[strLength - 1] == '\r' && strLength > 0)
+    if (string[strLength - 1] == '\r')
     {
         string[strLength - 1] = '\0';
     }
@@ -500,7 +492,7 @@ void deleteSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
     }
     playlistsArr[playlistIndx]->songs = realloc(playlistsArr[playlistIndx]->songs,
                                                 (playlistsArr[playlistIndx]->songsNum - 1) * sizeof(Song));
-    if (!playlistsArr[playlistIndx]->songs)
+    if ((!playlistsArr[playlistIndx]->songs) && playlistsArr[playlistIndx]->songsNum > 1)
     {
         free(playlistsArr[playlistIndx]->songs);
         printf("Dynamic Memory Allocation Failed!\n!");
@@ -520,9 +512,9 @@ void freeSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
 }
 
 // The function removes the given playlist from the playlist and free the relevant values
-void removePlaylist(Playlist ***playlistsArr, int playlistIndx, int playlistsArrLength)
+void removePlaylist(Playlist ***playlistsArr, int playlistIndx, int *playlistsArrLength)
 {
-    for (int i = 0; i < (*playlistsArr)[playlistIndx]->songsNum; i++;)
+    for (int i = 0; i < (*playlistsArr)[playlistIndx]->songsNum; i++)
     {
         freeSong((*playlistsArr), playlistIndx, i);
     }
@@ -530,17 +522,17 @@ void removePlaylist(Playlist ***playlistsArr, int playlistIndx, int playlistsArr
     free((*playlistsArr)[playlistIndx]->name);
     free((*playlistsArr)[playlistIndx]);
     // Move all the playlists from the removed playlist - 1 place backwards to keep the continuaity of playlists in the arr.
-    for (int i = playlistIndx; i < playlistsArrLength - 1; i++)
+    for (int i = playlistIndx; i < (*playlistsArrLength) - 1; i++)
     {
         (*playlistsArr)[i] = (*playlistsArr)[i + 1];
     }
-    (*playlistsArr) = realloc((*playlistsArr), (playlistsArrLength - 1) * sizeof(Playlist *));
-    if (!(*playlistsArr))
+    (*playlistsArr) = realloc((*playlistsArr), ((*playlistsArrLength) - 1) * sizeof(Playlist *));
+    if (!(*playlistsArr) && (*playlistsArrLength) > 1)
     {
         free((*playlistsArr));
         printf("Dynamic Memory Allocation Failed!\n!");
         exit(1);
     }
-    playlistsArrLength--;
+    (*playlistsArrLength)--;
     printf("Playlist deleted.\n");
 }
