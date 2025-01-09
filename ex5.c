@@ -1,6 +1,6 @@
 /******************
 Name: Shira Cababia
-ID:
+ID: 326153590
 Assignment: ex5
 *******************/
 
@@ -99,7 +99,6 @@ int main()
             Playlist *newPlaylist = malloc(sizeof(Playlist));
             if (!newPlaylist)
             {
-                free(newPlaylist);
                 printf("Dynamic Memory Allocation Failed!\n!");
                 exit(1);
             }
@@ -112,7 +111,7 @@ int main()
             playlistsArr = realloc(playlistsArr, (playlistsArrLength + 1) * sizeof(Playlist));
             if (!playlistsArr)
             {
-                free(playlistsArr);
+                free(newPlaylist);
                 printf("Dynamic Memory Allocation Failed!\n!");
                 exit(1);
             }
@@ -159,6 +158,12 @@ int main()
         printMenu();
         scanf("%d", &choice);
     }
+    // Free all data before getting out of the program
+    for (int i = 0; i < playlistsArrLength; i++)
+    {
+        freePlaylist(playlistsArr, i);
+    }
+    free(playlistsArr);
     printf("Goodbye!\n");
     return 0;
 }
@@ -184,6 +189,7 @@ char *getString()
     {
         printf("Dynamic Memory Allocation Failed!\n!");
         exit(1);
+        free(string);
     }
     // Read every char from the input until getting an enter.
     scanf(" %c", &c);
@@ -198,6 +204,7 @@ char *getString()
         {
             printf("Dynamic Memory Allocation Failed!\n!");
             exit(1);
+            free(string);
         }
         scanf("%c", &c);
     }
@@ -333,6 +340,7 @@ int optionsForPlaylist(Playlist **playlistsArr, int playlistIndx)
 
         case SORT_PLAYLIST: // 4
         {
+            // Sort the playlist by a specific order (implement in a function)
             int sortOption;
             printf("choose:\n"
                    "1. sort by year\n"
@@ -494,7 +502,7 @@ void deleteSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
                                                 (playlistsArr[playlistIndx]->songsNum - 1) * sizeof(Song));
     if ((!playlistsArr[playlistIndx]->songs) && playlistsArr[playlistIndx]->songsNum > 1)
     {
-        free(playlistsArr[playlistIndx]->songs);
+        free(playlistsArr);
         printf("Dynamic Memory Allocation Failed!\n!");
         exit(1);
     }
@@ -514,14 +522,9 @@ void freeSong(Playlist **playlistsArr, int playlistIndx, int songIndx)
 // The function removes the given playlist from the playlist and free the relevant values
 void removePlaylist(Playlist ***playlistsArr, int playlistIndx, int *playlistsArrLength)
 {
-    for (int i = 0; i < (*playlistsArr)[playlistIndx]->songsNum; i++)
-    {
-        freeSong((*playlistsArr), playlistIndx, i);
-    }
-    free((*playlistsArr)[playlistIndx]->songs);
-    free((*playlistsArr)[playlistIndx]->name);
-    free((*playlistsArr)[playlistIndx]);
-    // Move all the playlists from the removed playlist - 1 place backwards to keep the continuaity of playlists in the arr.
+    freePlaylist((*playlistsArr), playlistIndx);
+    /* Move all the playlists from the removed playlist - 1 place backwards to keep the continuaity of
+    playlists in the arr. */
     for (int i = playlistIndx; i < (*playlistsArrLength) - 1; i++)
     {
         (*playlistsArr)[i] = (*playlistsArr)[i + 1];
@@ -529,10 +532,22 @@ void removePlaylist(Playlist ***playlistsArr, int playlistIndx, int *playlistsAr
     (*playlistsArr) = realloc((*playlistsArr), ((*playlistsArrLength) - 1) * sizeof(Playlist *));
     if (!(*playlistsArr) && (*playlistsArrLength) > 1)
     {
-        free((*playlistsArr));
+        free(playlistsArr);
         printf("Dynamic Memory Allocation Failed!\n!");
         exit(1);
     }
     (*playlistsArrLength)--;
     printf("Playlist deleted.\n");
+}
+
+// The function frees the memory that's taken by the given playlist
+void freePlaylist(Playlist **playlistsArr, int playlistIndx)
+{
+    for (int i = 0; i < playlistsArr[playlistIndx]->songsNum; i++)
+    {
+        freeSong(playlistsArr, playlistIndx, i);
+    }
+    free(playlistsArr[playlistIndx]->songs);
+    free(playlistsArr[playlistIndx]->name);
+    free(playlistsArr[playlistIndx]);
 }
